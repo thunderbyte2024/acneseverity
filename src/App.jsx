@@ -13,7 +13,7 @@ const App = () => {
     const loadModel = async () => {
       try {
         console.log("Loading model...");
-        const loadedModel = await tf.loadLayersModel(`${window.location.origin}/model/65model.json`); // Ensure correct path
+        const loadedModel = await tf.loadLayersModel("/model/model.json"); // Ensure this path is correct
         setModel(loadedModel);
         setLoading(false);
         console.log("✅ Model Loaded Successfully");
@@ -42,7 +42,7 @@ const App = () => {
   const preprocessImage = async (imgElement) => {
     return tf.browser
       .fromPixels(imgElement)
-      .resizeNearestNeighbor([224, 224]) // Ensure this matches your model's input size
+      .resizeNearestNeighbor([224, 224]) // Adjust based on your model's input size
       .toFloat()
       .div(tf.scalar(255))
       .expandDims();
