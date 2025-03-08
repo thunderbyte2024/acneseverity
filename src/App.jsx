@@ -13,8 +13,7 @@ const App = () => {
     const loadModel = async () => {
       try {
         console.log("Loading model...");
-        const loadedModel = await tf.loadLayersModel(window.location.origin + "/models/65model.json");
- // Ensure correct path
+        const loadedModel = await tf.loadLayersModel(`${window.location.origin}/model/65model.json`); // Ensure correct path
         setModel(loadedModel);
         setLoading(false);
         console.log("✅ Model Loaded Successfully");
@@ -62,9 +61,12 @@ const App = () => {
 
     try {
       const imgElement = document.getElementById("uploadedImage");
-      const tensor = await preprocessImage(imgElement);
+      if (!imgElement) {
+        alert("Image element not found.");
+        return;
+      }
 
-      // Make prediction
+      const tensor = await preprocessImage(imgElement);
       const predictionTensor = model.predict(tensor);
       const result = await predictionTensor.data();
       setPrediction(result[0]); // Adjust based on model output
