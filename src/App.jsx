@@ -7,16 +7,27 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState(null);
   const [prediction, setPrediction] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect if the user is on a mobile device
+  useEffect(() => {
+    setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
+  }, []);
 
   // Load the model
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("Loading model...");
-        const loadedModel = await tf.loadLayersModel("/model/65model.json"); // Ensure this path is correct
+        console.log("🔍 Checking if 65model.json exists...");
+        const response = await fetch("/model/65model.json");
+
+        if (!response.ok) throw new Error("❌ Model JSON not found!");
+
+        console.log("⏳ Loading model...");
+        const loadedModel = await tf.loadLayersModel("/model/65model.json");
         setModel(loadedModel);
         setLoading(false);
-        console.log("✅ Model Loaded Successfully");
+        console.log("✅ Model Loaded Successfully!");
       } catch (error) {
         console.error("❌ Error loading model:", error);
         alert("Failed to load model. Check console for details.");
@@ -42,7 +53,7 @@ const App = () => {
   const preprocessImage = async (imgElement) => {
     return tf.browser
       .fromPixels(imgElement)
-      .resizeNearestNeighbor([224, 224]) // Adjust based on your model's input size
+      .resizeNearestNeighbor([224, 224]) // Match model input size
       .toFloat()
       .div(tf.scalar(255))
       .expandDims();
@@ -51,22 +62,19 @@ const App = () => {
   // Analyze image
   const analyzeImage = async () => {
     if (!image) {
-      alert("Please upload an image first.");
+      alert("⚠️ Please upload an image first.");
       return;
     }
     if (!model) {
-      alert("Model is still loading. Please wait.");
+      alert("⏳ Model is still loading. Please wait.");
       return;
     }
 
     try {
       const imgElement = document.getElementById("uploadedImage");
-      if (!imgElement) {
-        alert("Image element not found.");
-        return;
-      }
-
       const tensor = await preprocessImage(imgElement);
+
+      // Make prediction
       const predictionTensor = model.predict(tensor);
       const result = await predictionTensor.data();
       setPrediction(result[0]); // Adjust based on model output
@@ -81,9 +89,16 @@ const App = () => {
   return (
     <div className="container">
       <h1>Acne Severity AI</h1>
+
+      {/* Image Upload (Desktop) */}
       <input type="file" accept="image/*" onChange={handleImageUpload} disabled={loading} />
       
-      {loading && <p>Loading model... Please wait.</p>}
+      {/* Camera Capture (Mobile Only) */}
+      {isMobile && (
+        <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} disabled={loading} />
+      )}
+
+      {loading && <p>⏳ Loading model... Please wait.</p>}
       
       {image && (
         <div className="image-container">
@@ -105,3 +120,4 @@ const App = () => {
 };
 
 export default App;
+
