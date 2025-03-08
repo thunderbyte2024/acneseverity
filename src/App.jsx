@@ -13,7 +13,7 @@ const App = () => {
     const loadModel = async () => {
       try {
         console.log("Loading model...");
-        const loadedModel = await tf.loadLayersModel("/model/model.json"); // Ensure this path is correct
+        const loadedModel = await tf.loadLayersModel("/model/65model.json"); // Ensure this path is correct
         setModel(loadedModel);
         setLoading(false);
         console.log("✅ Model Loaded Successfully");
