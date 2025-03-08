@@ -1,22 +1,20 @@
 {
   "name": "acne-ai-app",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "cp -r public/model dist/model", 
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve -s dist"
+    "postbuild": "cp -r public/models dist/models"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "serve": "^14.2.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -30,4 +28,3 @@
     "vite": "^6.2.0"
   }
 }
-

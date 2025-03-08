@@ -18,13 +18,13 @@ const App = () => {
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("🔍 Checking if 65model.json exists...");
-        const response = await fetch("/model/65model.json");
+        console.log("🔍 Checking if model exists...");
+        const response = await fetch("/models/65model.json"); // Corrected path
 
         if (!response.ok) throw new Error("❌ Model JSON not found!");
 
         console.log("⏳ Loading model...");
-        const loadedModel = await tf.loadLayersModel("/model/65model.json");
+        const loadedModel = await tf.loadLayersModel("/models/65model.json");
         setModel(loadedModel);
         setLoading(false);
         console.log("✅ Model Loaded Successfully!");
@@ -76,9 +76,9 @@ const App = () => {
 
       // Make prediction
       const predictionTensor = model.predict(tensor);
-      const result = await predictionTensor.data();
-      setPrediction(result[0]); // Adjust based on model output
+      const result = await predictionTensor.data(); // Ensure async handling
 
+      setPrediction(result[0]); // Adjust based on model output
       console.log("✅ Prediction:", result);
     } catch (error) {
       console.error("❌ Error during prediction:", error);
@@ -92,14 +92,20 @@ const App = () => {
 
       {/* Image Upload (Desktop) */}
       <input type="file" accept="image/*" onChange={handleImageUpload} disabled={loading} />
-      
+
       {/* Camera Capture (Mobile Only) */}
       {isMobile && (
-        <input type="file" accept="image/*" capture="environment" onChange={handleImageUpload} disabled={loading} />
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleImageUpload}
+          disabled={loading}
+        />
       )}
 
       {loading && <p>⏳ Loading model... Please wait.</p>}
-      
+
       {image && (
         <div className="image-container">
           <img id="uploadedImage" src={image} alt="Uploaded Preview" />
@@ -120,4 +126,3 @@ const App = () => {
 };
 
 export default App;
-
