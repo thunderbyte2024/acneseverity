@@ -14,17 +14,18 @@ const App = () => {
     setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
   }, []);
 
-  // Load the model
+  // Load the model from the backend
   useEffect(() => {
     const loadModel = async () => {
       try {
         console.log("🔍 Checking if model exists...");
-        const response = await fetch("/models/65model.json"); // Corrected path
+        const modelURL = "https://acne-ai-backend.onrender.com/65model.json"; // Updated URL
 
+        const response = await fetch(modelURL);
         if (!response.ok) throw new Error("❌ Model JSON not found!");
 
         console.log("⏳ Loading model...");
-        const loadedModel = await tf.loadLayersModel("/models/65model.json");
+        const loadedModel = await tf.loadLayersModel(modelURL);
         setModel(loadedModel);
         setLoading(false);
         console.log("✅ Model Loaded Successfully!");
@@ -34,6 +35,7 @@ const App = () => {
         setLoading(false);
       }
     };
+
     loadModel();
   }, []);
 
