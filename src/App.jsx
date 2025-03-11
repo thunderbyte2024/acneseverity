@@ -6,7 +6,7 @@ import './styles.css';
 const AcneSeverityPredictor = () => {
   const [model, setModel] = useState(null);
   const [image, setImage] = useState(null);
-  const [_prediction, setPrediction] = useState(null); // Renamed to _prediction
+  const [prediction, setPrediction] = useState(null);
   const [severityLevel, setSeverityLevel] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -15,11 +15,12 @@ const AcneSeverityPredictor = () => {
   useEffect(() => {
     const loadModel = async () => {
       try {
+        console.log("Loading model...");
         const loadedModel = await tf.loadLayersModel('/models/65model.json');
         setModel(loadedModel);
-        console.log('Model loaded successfully!');
+        console.log("✅ Model loaded successfully!");
       } catch (err) {
-        console.error('Error loading model:', err);
+        console.error("❌ Error loading model:", err);
       }
     };
     loadModel();
@@ -28,6 +29,8 @@ const AcneSeverityPredictor = () => {
   // Handle image upload from gallery
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (event) => {
       setImage(event.target.result);
@@ -37,13 +40,16 @@ const AcneSeverityPredictor = () => {
     // Upload image to backend
     const formData = new FormData();
     formData.append('image', file);
+
     try {
-      const response = await axios.post('https://acne-ai-backend.onrender.com/, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      console.log('Image uploaded:', response.data);
+      const response = await axios.post(
+        'https://acne-ai-backend.onrender.com/', 
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      console.log("✅ Image uploaded:", response.data);
     } catch (err) {
-      console.error('Error uploading image:', err);
+      console.error("❌ Error uploading image:", err);
     }
   };
 
@@ -51,41 +57,54 @@ const AcneSeverityPredictor = () => {
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      videoRef.current.srcObject = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
     } catch (err) {
-      console.error('Error accessing camera:', err);
+      console.error("❌ Error accessing camera:", err);
     }
   };
 
   const captureImage = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
-    const imageSrc = canvas.toDataURL('image/png');
-    setImage(imageSrc);
+    if (video && canvas) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      setImage(canvas.toDataURL('image/png'));
+    }
   };
 
   // Predict acne severity
   const predictSeverity = async () => {
-    if (!model || !image) return;
+    if (!model || !image) {
+      alert("⚠️ Please upload an image or capture one first.");
+      return;
+    }
 
     const img = new Image();
     img.src = image;
 
     img.onload = async () => {
-      const tensor = tf.browser
-        .fromPixels(img)
-        .resizeNearestNeighbor([224, 224]) // Adjust size based on your model's input
-        .toFloat()
-        .expandDims();
+      try {
+        const tensor = tf.browser
+          .fromPixels(img)
+          .resizeNearestNeighbor([224, 224]) // Adjust to model's input shape
+          .toFloat()
+          .div(tf.scalar(255)) // Normalize pixel values
+          .expandDims();
 
-      const predictions = await model.predict(tensor);
-      const severity = predictions.argMax(1).dataSync()[0]; // Get the predicted class
-      setPrediction(predictions); // Set _prediction (intentionally unused)
-      setSeverityLevel(severity);
-      console.log('Predicted Severity Level:', severity);
+        const predictions = model.predict(tensor);
+        const data = await predictions.data(); // Ensure we handle the data correctly
+        const severity = data.indexOf(Math.max(...data)); // Find highest probability class
+
+        setPrediction(data);
+        setSeverityLevel(severity);
+        console.log("✅ Predicted Severity Level:", severity);
+      } catch (error) {
+        console.error("❌ Error during prediction:", error);
+      }
     };
   };
 
