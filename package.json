@@ -8,11 +8,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "postbuild": "cp -r public/models dist/models"
+    "postbuild": "if [ -d dist ]; then cp -r public/models dist/models; fi"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "axios": "^1.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
