@@ -15,7 +15,7 @@ const AcneSeverityPredictor = () => {
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("Loading model...");
+        console.log("⏳ Loading model...");
         const loadedModel = await tf.loadLayersModel('/models/65model.json');
         setModel(loadedModel);
         console.log("✅ Model loaded successfully!");
@@ -43,7 +43,7 @@ const AcneSeverityPredictor = () => {
 
     try {
       const response = await axios.post(
-        'https://acne-ai-backend.onrender.com/', 
+        'https://acne-ai-backend.onrender.com/upload', // ✅ FIXED API URL
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -90,14 +90,14 @@ const AcneSeverityPredictor = () => {
       try {
         const tensor = tf.browser
           .fromPixels(img)
-          .resizeNearestNeighbor([224, 224]) // Adjust to model's input shape
+          .resizeNearestNeighbor([224, 224]) // ✅ Adjusted to match model's expected input shape
           .toFloat()
-          .div(tf.scalar(255)) // Normalize pixel values
+          .div(tf.scalar(255)) // ✅ Normalize pixel values
           .expandDims();
 
         const predictions = model.predict(tensor);
-        const data = await predictions.data(); // Ensure we handle the data correctly
-        const severity = data.indexOf(Math.max(...data)); // Find highest probability class
+        const data = await predictions.data();
+        const severity = data.indexOf(Math.max(...data));
 
         setPrediction(data);
         setSeverityLevel(severity);
