@@ -11,12 +11,13 @@ const AcneSeverityPredictor = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // Load the TensorFlow.js model
+  // ✅ Load Model from Backend
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("⏳ Loading model...");
-        const loadedModel = await tf.loadLayersModel('/models/65model.json');
+        console.log("⏳ Loading model from backend...");
+        const modelUrl = 'https://acne-ai-backend.onrender.com/models/65model.json';
+        const loadedModel = await tf.loadLayersModel(modelUrl);
         setModel(loadedModel);
         console.log("✅ Model loaded successfully!");
       } catch (err) {
@@ -26,7 +27,7 @@ const AcneSeverityPredictor = () => {
     loadModel();
   }, []);
 
-  // Handle image upload from gallery
+  // ✅ Handle Image Upload
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -43,7 +44,7 @@ const AcneSeverityPredictor = () => {
 
     try {
       const response = await axios.post(
-        'https://acne-ai-backend.onrender.com/upload', // ✅ FIXED API URL
+        'https://acne-ai-backend.onrender.com/upload',
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
@@ -53,7 +54,7 @@ const AcneSeverityPredictor = () => {
     }
   };
 
-  // Handle camera scan
+  // ✅ Start Camera
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -76,7 +77,7 @@ const AcneSeverityPredictor = () => {
     }
   };
 
-  // Predict acne severity
+  // ✅ Predict Acne Severity
   const predictSeverity = async () => {
     if (!model || !image) {
       alert("⚠️ Please upload an image or capture one first.");
@@ -90,9 +91,9 @@ const AcneSeverityPredictor = () => {
       try {
         const tensor = tf.browser
           .fromPixels(img)
-          .resizeNearestNeighbor([224, 224]) // ✅ Adjusted to match model's expected input shape
+          .resizeNearestNeighbor([224, 224])
           .toFloat()
-          .div(tf.scalar(255)) // ✅ Normalize pixel values
+          .div(tf.scalar(255))
           .expandDims();
 
         const predictions = model.predict(tensor);
@@ -108,38 +109,18 @@ const AcneSeverityPredictor = () => {
     };
   };
 
-  // Map severity level to text
-  const getSeverityText = (level) => {
-    switch (level) {
-      case 0:
-        return 'Extremely Mild';
-      case 1:
-        return 'Mild';
-      case 2:
-        return 'Moderate';
-      case 3:
-        return 'Severe';
-      default:
-        return 'Unknown';
-    }
-  };
-
   return (
     <div className="container">
       <h1>Acne Severity Predictor</h1>
 
-      {/* Gallery Upload Section */}
+      {/* Upload Section */}
       <div className="upload-section">
-        <label htmlFor="upload">Upload an image from your gallery:</label>
+        <label htmlFor="upload">Upload an image:</label>
         <input type="file" id="upload" accept="image/*" onChange={handleImageUpload} />
-        <button className="upload-button" onClick={() => document.getElementById('upload').click()}>
-          Choose File
-        </button>
       </div>
 
-      {/* Camera Scan Section */}
+      {/* Camera Section */}
       <div className="camera-section">
-        <label>Use your camera to scan acne:</label>
         <video ref={videoRef} autoPlay playsInline></video>
         <button onClick={startCamera}>Start Camera</button>
         <button onClick={captureImage}>Capture Image</button>
@@ -147,18 +128,14 @@ const AcneSeverityPredictor = () => {
       </div>
 
       {/* Predict Button */}
-      <button onClick={predictSeverity} disabled={!model || !image}>
+      <button onClick={predictSeverity} disabled={!model}>
         Predict Severity
       </button>
 
       {/* Prediction Result */}
       {severityLevel !== null && (
         <div className="prediction-result">
-          <p>
-            Predicted Acne Severity: <span className={`severity-level level-${severityLevel}`}>
-              {getSeverityText(severityLevel)}
-            </span>
-          </p>
+          <p>Predicted Acne Severity: <strong>{['Extremely Mild', 'Mild', 'Moderate', 'Severe'][severityLevel]}</strong></p>
         </div>
       )}
     </div>
