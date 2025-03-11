@@ -1,130 +1,149 @@
-import React, { useState, useEffect } from "react";
-import * as tf from "@tensorflow/tfjs";
-import "./styles.css";
+import React, { useEffect, useState, useRef } from 'react';
+import * as tf from '@tensorflow/tfjs';
+import axios from 'axios';
+import './styles.css';
 
-const App = () => {
+const AcneSeverityPredictor = () => {
   const [model, setModel] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [image, setImage] = useState(null);
-  const [prediction, setPrediction] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [_prediction, setPrediction] = useState(null); // Renamed to _prediction
+  const [severityLevel, setSeverityLevel] = useState(null);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
 
-  // Detect if the user is on a mobile device
-  useEffect(() => {
-    setIsMobile(/Mobi|Android/i.test(navigator.userAgent));
-  }, []);
-
-  // Load the model from the backend
+  // Load the TensorFlow.js model
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("🔍 Checking if model exists...");
-        const modelURL = "https://acne-ai-backend.onrender.com/65model.json"; // Updated URL
-
-        const response = await fetch(modelURL);
-        if (!response.ok) throw new Error("❌ Model JSON not found!");
-
-        console.log("⏳ Loading model...");
-        const loadedModel = await tf.loadLayersModel(modelURL);
+        const loadedModel = await tf.loadLayersModel('/models/65model.json');
         setModel(loadedModel);
-        setLoading(false);
-        console.log("✅ Model Loaded Successfully!");
-      } catch (error) {
-        console.error("❌ Error loading model:", error);
-        alert("Failed to load model. Check console for details.");
-        setLoading(false);
+        console.log('Model loaded successfully!');
+      } catch (err) {
+        console.error('Error loading model:', err);
       }
     };
-
     loadModel();
   }, []);
 
-  // Handle image upload
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  // Handle image upload from gallery
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImage(event.target.result);
+    };
+    reader.readAsDataURL(file);
 
-  // Preprocess Image for Model
-  const preprocessImage = async (imgElement) => {
-    return tf.browser
-      .fromPixels(imgElement)
-      .resizeNearestNeighbor([224, 224]) // Match model input size
-      .toFloat()
-      .div(tf.scalar(255))
-      .expandDims();
-  };
-
-  // Analyze image
-  const analyzeImage = async () => {
-    if (!image) {
-      alert("⚠️ Please upload an image first.");
-      return;
-    }
-    if (!model) {
-      alert("⏳ Model is still loading. Please wait.");
-      return;
-    }
-
+    // Upload image to backend
+    const formData = new FormData();
+    formData.append('image', file);
     try {
-      const imgElement = document.getElementById("uploadedImage");
-      const tensor = await preprocessImage(imgElement);
+      const response = await axios.post('https://acne-ai-backend.onrender.com/, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      console.log('Image uploaded:', response.data);
+    } catch (err) {
+      console.error('Error uploading image:', err);
+    }
+  };
 
-      // Make prediction
-      const predictionTensor = model.predict(tensor);
-      const result = await predictionTensor.data(); // Ensure async handling
+  // Handle camera scan
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      videoRef.current.srcObject = stream;
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+    }
+  };
 
-      setPrediction(result[0]); // Adjust based on model output
-      console.log("✅ Prediction:", result);
-    } catch (error) {
-      console.error("❌ Error during prediction:", error);
-      alert("Error during analysis. Check console for details.");
+  const captureImage = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageSrc = canvas.toDataURL('image/png');
+    setImage(imageSrc);
+  };
+
+  // Predict acne severity
+  const predictSeverity = async () => {
+    if (!model || !image) return;
+
+    const img = new Image();
+    img.src = image;
+
+    img.onload = async () => {
+      const tensor = tf.browser
+        .fromPixels(img)
+        .resizeNearestNeighbor([224, 224]) // Adjust size based on your model's input
+        .toFloat()
+        .expandDims();
+
+      const predictions = await model.predict(tensor);
+      const severity = predictions.argMax(1).dataSync()[0]; // Get the predicted class
+      setPrediction(predictions); // Set _prediction (intentionally unused)
+      setSeverityLevel(severity);
+      console.log('Predicted Severity Level:', severity);
+    };
+  };
+
+  // Map severity level to text
+  const getSeverityText = (level) => {
+    switch (level) {
+      case 0:
+        return 'Extremely Mild';
+      case 1:
+        return 'Mild';
+      case 2:
+        return 'Moderate';
+      case 3:
+        return 'Severe';
+      default:
+        return 'Unknown';
     }
   };
 
   return (
     <div className="container">
-      <h1>Acne Severity AI</h1>
+      <h1>Acne Severity Predictor</h1>
 
-      {/* Image Upload (Desktop) */}
-      <input type="file" accept="image/*" onChange={handleImageUpload} disabled={loading} />
+      {/* Gallery Upload Section */}
+      <div className="upload-section">
+        <label htmlFor="upload">Upload an image from your gallery:</label>
+        <input type="file" id="upload" accept="image/*" onChange={handleImageUpload} />
+        <button className="upload-button" onClick={() => document.getElementById('upload').click()}>
+          Choose File
+        </button>
+      </div>
 
-      {/* Camera Capture (Mobile Only) */}
-      {isMobile && (
-        <input
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={handleImageUpload}
-          disabled={loading}
-        />
-      )}
+      {/* Camera Scan Section */}
+      <div className="camera-section">
+        <label>Use your camera to scan acne:</label>
+        <video ref={videoRef} autoPlay playsInline></video>
+        <button onClick={startCamera}>Start Camera</button>
+        <button onClick={captureImage}>Capture Image</button>
+        <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+      </div>
 
-      {loading && <p>⏳ Loading model... Please wait.</p>}
-
-      {image && (
-        <div className="image-container">
-          <img id="uploadedImage" src={image} alt="Uploaded Preview" />
-        </div>
-      )}
-
-      <button onClick={analyzeImage} className="analyze-button" disabled={loading}>
-        {loading ? "Loading..." : "Analyze"}
+      {/* Predict Button */}
+      <button onClick={predictSeverity} disabled={!model || !image}>
+        Predict Severity
       </button>
 
-      {prediction !== null && (
-        <div className="result">
-          <h2>Prediction: {prediction.toFixed(2)}</h2>
+      {/* Prediction Result */}
+      {severityLevel !== null && (
+        <div className="prediction-result">
+          <p>
+            Predicted Acne Severity: <span className={`severity-level level-${severityLevel}`}>
+              {getSeverityText(severityLevel)}
+            </span>
+          </p>
         </div>
       )}
     </div>
   );
 };
 
-export default App;
+export default AcneSeverityPredictor;
