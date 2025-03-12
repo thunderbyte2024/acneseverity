@@ -10,9 +10,9 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes("node_modules")) {
             if (id.includes("@tensorflow")) {
-              return "tensorflow"; // Separate TensorFlow.js into its own chunk
+              return "tensorflow"; // Separate TensorFlow.js for better loading
             }
-            return "vendor"; // Other third-party dependencies go into "vendor.js"
+            return "vendor"; // Other dependencies
           }
         }
       }
