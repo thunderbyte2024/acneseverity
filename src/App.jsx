@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import axios from 'axios';
 import './styles.css';
 
 const AcneSeverityPredictor = () => {
@@ -11,12 +10,12 @@ const AcneSeverityPredictor = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // ✅ Load Model from Backend
+  // ✅ Load Model from Local Files (No Backend Required)
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("⏳ Loading model from backend...");
-        const modelUrl = 'https://acne-ai-backend.onrender.com/models/65model.json';
+        console.log("⏳ Loading model from local files...");
+        const modelUrl = '/models/65model.json'; // Model is now stored in public/models/
         const loadedModel = await tf.loadLayersModel(modelUrl);
         setModel(loadedModel);
         console.log("✅ Model loaded successfully!");
@@ -27,8 +26,8 @@ const AcneSeverityPredictor = () => {
     loadModel();
   }, []);
 
-  // ✅ Handle Image Upload
-  const handleImageUpload = async (e) => {
+  // ✅ Handle Image Upload (No Backend Needed)
+  const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -37,21 +36,6 @@ const AcneSeverityPredictor = () => {
       setImage(event.target.result);
     };
     reader.readAsDataURL(file);
-
-    // Upload image to backend
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await axios.post(
-        'https://acne-ai-backend.onrender.com/upload',
-        formData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      console.log("✅ Image uploaded:", response.data);
-    } catch (err) {
-      console.error("❌ Error uploading image:", err);
-    }
   };
 
   // ✅ Start Camera
@@ -77,7 +61,7 @@ const AcneSeverityPredictor = () => {
     }
   };
 
-  // ✅ Predict Acne Severity
+  // ✅ Predict Acne Severity Using Local Model
   const predictSeverity = async () => {
     if (!model || !image) {
       alert("⚠️ Please upload an image or capture one first.");
@@ -143,3 +127,4 @@ const AcneSeverityPredictor = () => {
 };
 
 export default AcneSeverityPredictor;
+                                                                                                                          
