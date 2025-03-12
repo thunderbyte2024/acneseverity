@@ -2,20 +2,19 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import './styles.css';
 
-const AcneSeverityPredictor = () => {
+const App = () => {
   const [model, setModel] = useState(null);
   const [image, setImage] = useState(null);
-  const [prediction, setPrediction] = useState(null);
   const [severityLevel, setSeverityLevel] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // ✅ Load Model from Local Files (No Backend Required)
+  // ✅ Load Model from Local Files
   useEffect(() => {
     const loadModel = async () => {
       try {
         console.log("⏳ Loading model from local files...");
-        const modelUrl = '/models/65model.json'; // Model is now stored in public/models/
+        const modelUrl = '/models/65model.json'; // Ensure model is placed in /public/models/
         const loadedModel = await tf.loadLayersModel(modelUrl);
         setModel(loadedModel);
         console.log("✅ Model loaded successfully!");
@@ -26,7 +25,7 @@ const AcneSeverityPredictor = () => {
     loadModel();
   }, []);
 
-  // ✅ Handle Image Upload (No Backend Needed)
+  // ✅ Handle Image Upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -61,7 +60,7 @@ const AcneSeverityPredictor = () => {
     }
   };
 
-  // ✅ Predict Acne Severity Using Local Model
+  // ✅ Predict Acne Severity
   const predictSeverity = async () => {
     if (!model || !image) {
       alert("⚠️ Please upload an image or capture one first.");
@@ -84,7 +83,6 @@ const AcneSeverityPredictor = () => {
         const data = await predictions.data();
         const severity = data.indexOf(Math.max(...data));
 
-        setPrediction(data);
         setSeverityLevel(severity);
         console.log("✅ Predicted Severity Level:", severity);
       } catch (error) {
@@ -126,5 +124,4 @@ const AcneSeverityPredictor = () => {
   );
 };
 
-export default AcneSeverityPredictor;
-                                                                                                                          
+export default App;
