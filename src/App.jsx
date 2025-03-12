@@ -9,12 +9,12 @@ const App = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // ✅ Load Model from Local Files
+  // ✅ Load Model from Public Folder
   useEffect(() => {
     const loadModel = async () => {
       try {
-        console.log("⏳ Loading model from local files...");
-        const modelUrl = '/models/65model.json'; // Ensure model is placed in /public/models/
+        console.log("⏳ Loading model...");
+        const modelUrl = `${window.location.origin}/models/model.json`; // Load from /public/models/
         const loadedModel = await tf.loadLayersModel(modelUrl);
         setModel(loadedModel);
         console.log("✅ Model loaded successfully!");
@@ -74,14 +74,14 @@ const App = () => {
       try {
         const tensor = tf.browser
           .fromPixels(img)
-          .resizeNearestNeighbor([224, 224])
+          .resizeNearestNeighbor([224, 224]) // Ensure this matches your model's input size
           .toFloat()
           .div(tf.scalar(255))
           .expandDims();
 
         const predictions = model.predict(tensor);
         const data = await predictions.data();
-        const severity = data.indexOf(Math.max(...data));
+        const severity = data.indexOf(Math.max(...data)); // Get the highest probability index
 
         setSeverityLevel(severity);
         console.log("✅ Predicted Severity Level:", severity);
@@ -93,7 +93,7 @@ const App = () => {
 
   return (
     <div className="container">
-      <h1>Acne Severity Predictor</h1>
+      <h1>Acne Severity Detector</h1>
 
       {/* Upload Section */}
       <div className="upload-section">
