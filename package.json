@@ -1,14 +1,15 @@
 {
   "name": "acne-ai-app",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
     "preview": "vite preview",
-    "postbuild": "cp -r public/models dist/models"
+    "lint": "eslint .",
+    "clean": "rm -rf dist && mkdir dist",  // ✅ Clears old builds
+    "postbuild": "cp -r public/models dist/models"  // ✅ Ensures model files are copied correctly
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
