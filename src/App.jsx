@@ -1,20 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import './styles.css';
 
-const App = () => {
+const AcneSeverityPredictor = () => {
   const [model, setModel] = useState(null);
   const [image, setImage] = useState(null);
   const [severityLevel, setSeverityLevel] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // ✅ Load Model from Public Folder
+  // ✅ Load Model from /public folder
   useEffect(() => {
     const loadModel = async () => {
       try {
         console.log("⏳ Loading model...");
-        const modelUrl = `${window.location.origin}/models/model.json`; // Load from /public/models/
+        const modelUrl = '/models/model.json'; // Load locally from public folder
         const loadedModel = await tf.loadLayersModel(modelUrl);
         setModel(loadedModel);
         console.log("✅ Model loaded successfully!");
@@ -49,6 +48,7 @@ const App = () => {
     }
   };
 
+  // ✅ Capture Image from Camera
   const captureImage = () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -60,7 +60,7 @@ const App = () => {
     }
   };
 
-  // ✅ Predict Acne Severity (with Normalization)
+  // ✅ Predict Acne Severity
   const predictSeverity = async () => {
     if (!model || !image) {
       alert("⚠️ Please upload an image or capture one first.");
@@ -74,14 +74,14 @@ const App = () => {
       try {
         const tensor = tf.browser
           .fromPixels(img)
-          .resizeNearestNeighbor([224, 224]) // Ensure this matches the model's input size
+          .resizeNearestNeighbor([224, 224])
           .toFloat()
-          .div(tf.scalar(255)) // ✅ Normalization (0-1 scaling)
+          .div(tf.scalar(255)) // ✅ Normalization fix
           .expandDims();
 
         const predictions = model.predict(tensor);
         const data = await predictions.data();
-        const severity = data.indexOf(Math.max(...data)); // Get the highest probability index
+        const severity = data.indexOf(Math.max(...data));
 
         setSeverityLevel(severity);
         console.log("✅ Predicted Severity Level:", severity);
@@ -97,8 +97,7 @@ const App = () => {
 
       {/* Upload Section */}
       <div className="upload-section">
-        <label htmlFor="upload">Upload an image:</label>
-        <input type="file" id="upload" accept="image/*" onChange={handleImageUpload} />
+        <input type="file" accept="image/*" onChange={handleImageUpload} />
       </div>
 
       {/* Camera Section */}
@@ -124,4 +123,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default AcneSeverityPredictor;
