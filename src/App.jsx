@@ -60,7 +60,7 @@ const App = () => {
     }
   };
 
-  // ✅ Predict Acne Severity
+  // ✅ Predict Acne Severity (with Normalization)
   const predictSeverity = async () => {
     if (!model || !image) {
       alert("⚠️ Please upload an image or capture one first.");
@@ -74,9 +74,9 @@ const App = () => {
       try {
         const tensor = tf.browser
           .fromPixels(img)
-          .resizeNearestNeighbor([224, 224]) // Ensure this matches your model's input size
+          .resizeNearestNeighbor([224, 224]) // Ensure this matches the model's input size
           .toFloat()
-          .div(tf.scalar(255))
+          .div(tf.scalar(255)) // ✅ Normalization (0-1 scaling)
           .expandDims();
 
         const predictions = model.predict(tensor);
