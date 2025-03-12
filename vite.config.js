@@ -4,6 +4,18 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    chunkSizeWarningLimit: 1600, // Increase limit from default 500KB to 1.6MB
-  },
+    chunkSizeWarningLimit: 1600, // Increase limit to avoid warnings
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("@tensorflow")) {
+              return "tensorflow"; // Separate TensorFlow.js into its own chunk
+            }
+            return "vendor"; // Other third-party dependencies go into "vendor.js"
+          }
+        }
+      }
+    }
+  }
 });
