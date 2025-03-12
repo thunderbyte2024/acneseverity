@@ -8,8 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "clean": "rm -rf dist && mkdir dist",  // ✅ Clears old builds
-    "postbuild": "cp -r public/models dist/models"  // ✅ Ensures model files are copied correctly
+    "clean": "rm -rf dist && mkdir dist",
+    "postbuild": "cp -r public/models dist/models"
   },
   "dependencies": {
     "@tensorflow/tfjs": "^4.22.0",
