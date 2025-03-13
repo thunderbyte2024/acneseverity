@@ -1,9 +1,13 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: Arial, sans-serif;
   text-align: center;
   background-color: #f8f9fa;
-  margin: 0;
-  padding: 0;
 }
 
 .container {
@@ -17,12 +21,14 @@ body {
 
 h1 {
   font-size: 22px;
+  margin-bottom: 15px;
 }
 
 .upload-section input {
   width: 100%;
   padding: 10px;
   margin-top: 10px;
+  font-family: inherit;
 }
 
 .camera-section video {
@@ -40,10 +46,17 @@ button {
   color: white;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: #0056b3;
 }
 
 button:disabled {
   background: gray;
+  cursor: not-allowed;
 }
 
 .prediction-result {
