@@ -26,8 +26,8 @@ const AcneSeverityPredictor = () => {
 
 
 
-const App = () => {
-  const [model, setModel] = useState(null);
+//const App = () => {
+//  const [model, setModel] = useState(null);
 
   useEffect(() => {
     async function loadModel() {
