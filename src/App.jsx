@@ -29,18 +29,17 @@ const AcneSeverityPredictor = () => {
 //const App = () => {
 //  const [model, setModel] = useState(null);
 
-  useEffect(() => {
+    useEffect(() => {
     async function loadModel() {
       try {
-        let loadedModel = await tf.loadLayersModel("/models/model.json");
-
-        // Manually define input shape
-        const inputLayer = tf.input({ shape: [224, 224, 3] });
-        const outputLayer = loadedModel.apply(inputLayer);
-        loadedModel = tf.model({ inputs: inputLayer, outputs: outputLayer });
+        console.log("⏳ Loading model...");
+        const loadedModel = await tf.loadLayersModel("/models/model.json");
 
         console.log("✅ Model loaded successfully!");
         setModel(loadedModel);
+
+        // Log the model architecture
+        loadedModel.summary();
       } catch (error) {
         console.error("❌ Error loading model:", error);
       }
