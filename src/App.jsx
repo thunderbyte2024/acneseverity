@@ -1,5 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import * as tf from '@tensorflow/tfjs';
+//import React, { useEffect, useState, useRef } from 'react';
+//import * as tf from '@tensorflow/tfjs';
+import * as tf from "@tensorflow/tfjs";
+import { useEffect, useState } from "react";
 
 const AcneSeverityPredictor = () => {
   const [model, setModel] = useState(null);
@@ -8,7 +10,7 @@ const AcneSeverityPredictor = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  // ✅ Load Model from /public folder
+  /*  ✅ Load Model from /public folder
   useEffect(() => {
     const loadModel = async () => {
       try {
@@ -22,7 +24,38 @@ const AcneSeverityPredictor = () => {
       }
     };
     loadModel();
+  }, []);*/
+
+
+
+const App = () => {
+  const [model, setModel] = useState(null);
+
+  useEffect(() => {
+    async function loadModel() {
+      try {
+        let loadedModel = await tf.loadLayersModel("/models/model.json");
+
+        // Manually define input shape
+        const inputLayer = tf.input({ shape: [224, 224, 3] });
+        const outputLayer = loadedModel.apply(inputLayer);
+        loadedModel = tf.model({ inputs: inputLayer, outputs: outputLayer });
+
+        console.log("✅ Model loaded successfully!");
+        setModel(loadedModel);
+      } catch (error) {
+        console.error("❌ Error loading model:", error);
+      }
+    }
+
+    loadModel();
   }, []);
+
+  return <div>Acne Severity Detector</div>;
+};
+
+export default App;
+
 
   // ✅ Handle Image Upload
   const handleImageUpload = (e) => {
