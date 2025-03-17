@@ -8,51 +8,31 @@ const AcneSeverityPredictor = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  //  ✅ Load Model from /public folder
-  //useEffect(() => {
-  //  const loadModel = async () => {
-  //    try {
-  //      console.log("⏳ Loading model...");
-  //      const modelUrl = '/models/model.json'; // Load locally from public folder
-  //      const loadedModel = await tf.loadLayersModel(modelUrl);
-  //      setModel(loadedModel);
-  //      console.log("✅ Model loaded successfully!");
-  //    } catch (err) {
-  //      console.error("❌ Error loading model:", err);
-  //    }
-  //  };
-  //  loadModel();
- // }, []);
-
-
-
-//const App = () => {
-//  const [model, setModel] = useState(null);
-
-   useEffect(() => {
+  // ✅ Dynamically Load Model Based on Environment
+  useEffect(() => {
     async function loadModel() {
-        try {
-            console.log("⏳ Loading model...");
-            
-            // Use an absolute URL if deployed on Render or Vercel
-            const modelUrl = "https://acneseverity-deco.onrender.com/models/model.json";  
-            const loadedModel = await tf.loadLayersModel(modelUrl);
-
-            console.log("✅ Model loaded successfully!");
-            setModel(loadedModel);
-
-            // Log model summary
-            loadedModel.summary();
-        } catch (error) {
-            console.error("❌ Error loading model:", error);
-        }
+      try {
+        console.log("⏳ Loading model...");
+        
+        // Use local path if running locally, otherwise use the deployed URL
+        const isLocal = window.location.hostname === "localhost";
+        const modelUrl = isLocal 
+          ? "/models/model.json" 
+          : "https://acneseverity-deco.onrender.com/models/model.json";  
+        
+        const loadedModel = await tf.loadLayersModel(modelUrl);
+        console.log("✅ Model loaded successfully!");
+        
+        setModel(loadedModel);
+        loadedModel.summary(); // Debugging: Show model architecture
+      } catch (error) {
+        console.error("❌ Error loading model:", error);
+      }
     }
 
     loadModel();
-}, []);
+  }, []);
 
-
-  
   // ✅ Handle Image Upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -91,25 +71,34 @@ const AcneSeverityPredictor = () => {
 
   // ✅ Predict Acne Severity
   const predictSeverity = async () => {
-    if (!model || !image) {
-      alert("⚠️ Please upload an image or capture one first.");
+    if (!model) {
+      alert("⚠️ Model is not loaded yet. Please wait.");
+      return;
+    }
+    
+    if (!image) {
+      alert("⚠️ Please upload or capture an image first.");
       return;
     }
 
+    console.log("📸 Processing image...");
+    
     const img = new Image();
     img.src = image;
 
     img.onload = async () => {
       try {
+        // Convert image to TensorFlow format
         const tensor = tf.browser
           .fromPixels(img)
-          .resizeNearestNeighbor([224, 224])
+          .resizeBilinear([224, 224])  // ✅ Better resizing method
           .toFloat()
-          .div(tf.scalar(255)) // ✅ Normalization fix
-          .expandDims();
+          .div(tf.scalar(255))  // ✅ Normalize pixel values
+          .expandDims();  // Add batch dimension
 
+        console.log("🧠 Running prediction...");
         const predictions = model.predict(tensor);
-        const data = await predictions.data();
+        const data = await predictions.data(); // ✅ Await for correct output
         const severity = data.indexOf(Math.max(...data));
 
         setSeverityLevel(severity);
