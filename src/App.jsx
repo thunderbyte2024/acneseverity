@@ -1,7 +1,5 @@
-//import React, { useEffect, useState, useRef } from 'react';
-//import * as tf from '@tensorflow/tfjs';
-import * as tf from "@tensorflow/tfjs";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from 'react';
+import * as tf from '@tensorflow/tfjs';
 
 const AcneSeverityPredictor = () => {
   const [model, setModel] = useState(null);
@@ -10,21 +8,21 @@ const AcneSeverityPredictor = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
-  /*  ✅ Load Model from /public folder
-  useEffect(() => {
-    const loadModel = async () => {
-      try {
-        console.log("⏳ Loading model...");
-        const modelUrl = '/models/model.json'; // Load locally from public folder
-        const loadedModel = await tf.loadLayersModel(modelUrl);
-        setModel(loadedModel);
-        console.log("✅ Model loaded successfully!");
-      } catch (err) {
-        console.error("❌ Error loading model:", err);
-      }
-    };
-    loadModel();
-  }, []);*/
+  //  ✅ Load Model from /public folder
+  //useEffect(() => {
+  //  const loadModel = async () => {
+  //    try {
+  //      console.log("⏳ Loading model...");
+  //      const modelUrl = '/models/model.json'; // Load locally from public folder
+  //      const loadedModel = await tf.loadLayersModel(modelUrl);
+  //      setModel(loadedModel);
+  //      console.log("✅ Model loaded successfully!");
+  //    } catch (err) {
+  //      console.error("❌ Error loading model:", err);
+  //    }
+  //  };
+  //  loadModel();
+ // }, []);
 
 
 
