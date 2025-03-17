@@ -51,12 +51,7 @@ const App = () => {
     loadModel();
   }, []);
 
-  return <div>Acne Severity Detector</div>;
-};
-
-export default App;
-
-
+  
   // ✅ Handle Image Upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
