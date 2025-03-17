@@ -29,24 +29,28 @@ const AcneSeverityPredictor = () => {
 //const App = () => {
 //  const [model, setModel] = useState(null);
 
-    useEffect(() => {
+   useEffect(() => {
     async function loadModel() {
-      try {
-        console.log("⏳ Loading model...");
-        const loadedModel = await tf.loadLayersModel("/models/model.json");
+        try {
+            console.log("⏳ Loading model...");
+            
+            // Use an absolute URL if deployed on Render or Vercel
+            const modelUrl = "https://acneseverity-deco.onrender.com/models/model.json";  
+            const loadedModel = await tf.loadLayersModel(modelUrl);
 
-        console.log("✅ Model loaded successfully!");
-        setModel(loadedModel);
+            console.log("✅ Model loaded successfully!");
+            setModel(loadedModel);
 
-        // Log the model architecture
-        loadedModel.summary();
-      } catch (error) {
-        console.error("❌ Error loading model:", error);
-      }
+            // Log model summary
+            loadedModel.summary();
+        } catch (error) {
+            console.error("❌ Error loading model:", error);
+        }
     }
 
     loadModel();
-  }, []);
+}, []);
+
 
   
   // ✅ Handle Image Upload
